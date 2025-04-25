@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe Storage App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            background-color: #521313;
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #715100;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: 1px solid;
+            background-color: #fffeec;
+            border-bottom: none;
+        }
+        .tab.active {
+            background-color: rgb(238, 233, 209);
+            font-weight: bold;
+
+        }
+        .content {
+            display: none;
+            padding: 20px;
+            border: 1px solid #ccc;
+            background-color: #fffeec;
+        }
+        .content.active {
+            display: block;
+        }
+        .search-container {
+            margin-bottom: 20px;
+        }
+        .advanced-search {
+            display: none;
+            margin-top: 10px;
+            background-color: #fffeec;
+            padding: 2%;
+        }
+        .filter-options {
+            display: none;
+            margin-top: 10px;
+        }
+        .group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 20px;
+            opacity: 1;
+        }
+        .option-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            opacity: 1;
+        }
+        .dropdown {
+            margin-left: 20px;
+            display: flex;
+            gap: 10px;
+            pointer-events: none;
+            color: black ;
+            opacity: 1;
+        }
+        .checkbox-group {
+            display: flex;
+            gap: 10px;
+            pointer-events: none;
+            opacity: 1;
+        }
+        .checkbox-group input {
+            pointer-events: none;
+        }
+        .dropdown select {
+            pointer-events: none;
+        }
+        .upload-section {
+            background-color: rgb(238, 233, 209);
+            display: none;
+        }
+        .recipe:nth-child(odd){
+            background-color: rgb(238, 233, 209);
+            padding: 2%;
+        }
+        .recipe:nth-child(even){
+            padding: 2%;
+        }
+        
+        
+    </style>
+</head>
+<body>
+    <div class="tabs">
+        <div class="tab active" onclick="showTab('viewRecipes')">My Recipes</div>
+        <div class="tab" onclick="showTab('addRecipe')">Upload Recipe</div>
+    </div>
+    
+    <div id="viewRecipes" class="content active">
+        <h2>My Recipes:</h2>
+        <!-- <label for="sort-recipes">Sort by:</label>
+            <select id="sort-recipes" onchange="sortRecipes()">
+            <option value="name">Name</option>
+            <option value="difficulty">Difficulty</option>
+        </select> -->
+        <h2>Search Your Recipes</h2>
+        <div class="search-container">
+            <input type="text" id="search-bar" placeholder="Search by name...">
+            <button onclick="performSearch()">Search</button> <br>
+            <button onclick="toggleAdvancedSearch()">Advanced Search</button>
+        </div>
+        
+        <div id="advancedSearch" class="advanced-search">
+            <h2>Advanced Search Filters</h2>
+            <div class="group">
+                <div class="option-group">
+                    <label><input type="checkbox" name="main" value="1" onclick="toggleOptions(1)"> Ingredients</label>
+                    <div id="dropdown-1" class="dropdown">
+                        <select disabled>
+                            <option>Include</option>
+                            <option>Exclude</option>
+                        </select>
+                        <div id="checkbox-1" class="checkbox-group">
+                        </div>
+                    </div>
+                </div>
+                <div class="option-group">
+                    <label><input type="checkbox" name="main" value="2" onclick="toggleOptions(2)"> Dietary Restrictions</label>
+                    <div id="checkbox-2" class="checkbox-group">
+                        <label><input type="checkbox" disabled> Vegetarian</label>
+                        <label><input type="checkbox" disabled> Vegan</label>
+                        <label><input type="checkbox" disabled> Gluten-Free</label>
+                        <label><input type="checkbox" disabled> Contains Gluton</label>
+                        <label><input type="checkbox" disabled> Keto</label>
+                        <label><input type="checkbox" disabled> Dairy-Free</label>
+                        <label><input type="checkbox" disabled> Contains Dairy</label>
+                    </div>
+                </div>
+                <div class="option-group">
+                    <label><input type="checkbox" name="main" value="3" onclick="toggleOptions(3)"> Meal Type:  </label>
+                    <br>
+                    <div id="dropdown-3" class="dropdown">
+                    <select id="meal-types" class="dropdown" disabled>
+                        <option value="empty" selected> --Select an mealtime option--</option>
+                        <option value="Breakfast">Breakfast</option>
+                        <option value="Brunch">Brunch</option>
+                        <option value="Lunch">Lunch</option>
+                        <option value="Supper">Supper</option>
+                        <option value="Snack">Snack</option>
+                    </select><br>
+                    </div>
+                </div>
+            </div>      
+        </div> <br>
+        <br>
+        <div id="recipe-list"></div>
+        
+    </div>
+
+    <div id="addRecipe" class="content">
+        <h2>Upload Recipe</h2>
+
+        <button onclick="showUploadSection('uploadRecipe')">Upload recipe manually</button>
+        <button onclick="showUploadSection('option2')">Upload recipe via image</button>
+        <button onclick="showUploadSection('option3')">upload recipe via document</button>
+        
+        <div id="uploadRecipe" class="upload-section">
+            <form id="recipe-form">
+                <label>Recipe Name:</label> 
+                <input type="text" id="recipe-name" required><br>
+                <label>Difficulty:</label>
+                <select id="recipe-difficulty" required>
+                    <option value="Easy">Easy</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Hard">Hard</option>
+                </select><br>
+                <label>Time Required (In Minutes):</label>
+                <input type="number" id="recipe-time" required><br>
+                <label>Ingredients:</label>
+                <div id="ingredients-list"></div> 
+                <button type="button" onclick="addIngredient()">Add Ingredient</button><br>
+                <label>Directions:</label>
+                <div id="directions-list"></div>
+                <button type="button" onclick="addDirection()">Add Step</button> <br>
+                <label>Dietary Restrictions:</label> <br>
+                <button type="button" id="dietNotes" onclick="addDietNotes()">Add Dietary Notes</button> <br>
+                <div id="dietaryContainer"></div>
+                <label>Meal Type:</label>
+                <select class="meal-type" required>
+                    <option value="">--Select Meal Type--</option>
+                    <option value="Breakfast">Breakfast</option>
+                    <option value="Brunch">Brunch</option>
+                    <option value="Lunch">Lunch</option>
+                    <option value="Dinner">Dinner</option>
+                    <option value="Snack">Snack</option>
+                </select> <br>
+                <label>Upload Image:</label>
+                <input type="file" id="recipe-image" accept="image/*"> <br> <br>
+                <button type="submit">Submit Recipe</button>
+            </form>
+            <p id="feedback-message"></p>
+        </div>
+        <div id="option2" class="upload-section">
+            <form id="file-submit-form">
+                <label>Upload Image:</label>
+                    <input type="file" id="recipe-file" accept="image/*"> <br> <br>
+                    <button type="submit">Submit Recipe</button>
+            </form>
+        </div>
+        <div id="option3" class="upload-section">
+            <form id="doc-submit-form">
+                <label>Upload Image:</label>
+                    <input type="file" id="doc-file" accept="document/*"> <br> <br>
+                    <button type="submit">Submit Recipe</button>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        //const ingredients = ["Spinach", "Garlic", "Cream", "Tomato", "Basil", "Chicken", "Beef", "Carrot", "Potato"];
+        const difficulty = ["Easy", "Medium", "Hard"];
+        const mealType = ["Breakfast","Brunch", "Lunch", "Supper", "Snack"];
+        
+        const dietOptions = ["Vegetarian","Vegan", "Gluton-Free", "Keto", "Dairy-Free", "Contains Dairy","Gluton"];
+
+        const dropdownContainer = document.getElementById("dietaryContainer");
+        const addBtn = document.getElementById("dietNotes");
+        let dietDropdownCount = 0;
+
+
+        let recipes = [
+        {           
+            name: "Spaghetti Carbonara",
+            difficulty: "Medium",
+            time: 30,
+            ingredients: [
+                { name: "Spaghetti", measurement: "200g", size: "1 serving" },
+                { name: "Eggs", measurement: "2", size: "large" },
+                { name: "Parmesan", measurement: "50g", size: "grated" },
+                { name: "Bacon", measurement: "100g", size: "diced" }
+            ],
+            directions: [
+                "Boil the spaghetti in salted water until al dente.",
+                "Cook the bacon in a pan until crispy.",
+                "Whisk the eggs and parmesan in a bowl.",
+                "Combine the cooked spaghetti, bacon, and egg mixture, stirring quickly to avoid scrambling the eggs.",
+                "Serve with extra parmesan on top."
+            ],
+            mealType: "Dinner",
+            dietaryRestrictions: ["Contains Gluten", "Dairy"]
+        },
+        {
+            name: "Avocado Toast",
+            difficulty: "Easy",
+            time: 10,
+            ingredients: [
+                { name: "Avocado", measurement: "1", size: "large" },
+                { name: "Whole Wheat Bread", measurement: "2 slices", size: "2 slices" },
+                { name: "Olive Oil", measurement: "1 tsp", size: "optional" },
+                { name: "Lemon", measurement: "1/2", size: "juiced" }
+            ],
+            directions: [
+                "Toast the slices of bread.",
+                "Mash the avocado in a bowl and mix with lemon juice.",
+                "Spread the mashed avocado on the toasted bread.",
+                "Drizzle with olive oil if desired."
+            ],
+            mealType: "Breakfast",
+            dietaryRestrictions: ["Vegan", "Gluten-Free"]
+        },
+        {
+            name: "Chicken Caesar Salad",
+            difficulty: "Medium",
+            time: 20,
+            ingredients: [
+                { name: "Chicken Breast", measurement: "1", size: "grilled and sliced" },
+                { name: "Romaine Lettuce", measurement: "2 cups", size: "chopped" },
+                { name: "Caesar Dressing", measurement: "3 tbsp", size: "optional" },
+                { name: "Croutons", measurement: "1/4 cup", size: "for garnish" },
+                { name: "Parmesan", measurement: "2 tbsp", size: "shredded" }
+            ],
+            directions: [
+                "Grill the chicken breast and slice it.",
+                "Toss the chopped lettuce with Caesar dressing.",
+                "Top with grilled chicken, croutons, and parmesan."
+            ],
+            mealType: "Lunch",
+            dietaryRestrictions: ["Dairy", "Contains Gluten"]
+        },
+        {
+            name: "Vegetable Stir-Fry",
+            difficulty: "Easy",
+            time: 15,
+            ingredients: [
+                { name: "Carrot", measurement: "1", size: "julienned" },
+                { name: "Bell Pepper", measurement: "1", size: "sliced" },
+                { name: "Soy Sauce", measurement: "2 tbsp", size: "low-sodium" },
+                { name: "Olive Oil", measurement: "1 tbsp", size: "for frying" },
+                { name: "Garlic", measurement: "2 cloves", size: "minced" }
+            ],
+            directions: [
+                "Heat the olive oil in a pan over medium heat.",
+                "Add garlic and sauté for 1-2 minutes.",
+                "Add carrots and bell pepper, stir-fry until tender.",
+                "Add soy sauce and stir to coat. Cook for an additional 2 minutes."
+            ],
+            mealType: "Dinner",
+            dietaryRestrictions: ["Vegan", "Gluten-Free"]
+        },
+        {           
+            name: "Bisquick Pancakes",
+            difficulty: "Easy",
+            time: 20,
+            ingredients: [
+                { name: "Bisquick Mix", measurement: "2", size: "Cups" },
+                { name: "Eggs", measurement: "2", size: "large" },
+                { name: "Milk", measurement: "1", size: "cup" },
+                { name: "Vegetable Oil", measurement: "2", size: "Tablespoons" }
+            ],
+            directions: [
+                "Grease or spray griddle or skillet. Heat over medium-high heat or electric griddle to 375°F. (Surface is ready when a few drops of water sprinkled on it dance and disappear.)",
+                "Stir all ingredients until blended. Pour by slightly less than 1/4 cupfuls onto hot griddle.",
+                "c.	Cook until edges are dry; about 1 minute 30 seconds. Turn; cook 1 minute 30 seconds or until golden."
+            ],
+            mealType: "Breakfast",
+            dietaryRestrictions: ["Contains Gluten"]
+        },
+        {           
+            name: "Test Recipe",
+            difficulty: "Easy",
+            time: 3,
+            ingredients: [
+                { name: "Blue", measurement: "Marker", size: "" },
+                { name: "Yellow", measurement: "Colored Pencil", size: "faber-Castell" },
+                { name: "Green", measurement: "Colored Pencil", size: "Lizard" },
+            ],
+            directions: [
+                "Add a yellow circle in the top right corner of the paper.",
+                "Add a green zigzag line going across the bottom of the paper.",
+                "Add blue coloring to taste above the green line and not in the yellow circle.",
+                "Optional: color in the yellow circle and under the green line with appropriate colors."
+            ],
+            mealType: "Breakfast",
+            dietaryRestrictions: ["Contains Gluten"]
+        }
+        ];
+
+        function getAllIngredientNames(recipes) {
+            const ingredientNames = [];
+            recipes.forEach(recipe => {
+                recipe.ingredients.forEach(ingredient => {
+                    ingredientNames.push(ingredient.name);
+                });
+            });
+            return ingredientNames;
+        }
+
+        const allIngredients = getAllIngredientNames(recipes);
+        //console.log("All Ingredients:", allIngredients);
+
+        function displayIngredientDropdown(recipes) {
+            const container = document.getElementById("checkbox-1");
+
+            container.innerHTML = "";
+
+            const select = document.createElement("select");
+            select.id = "ingredient-select";
+            select.required=true;
+
+            const defaultOption = document.createElement("option");
+            defaultOption.value = "empty";
+            defaultOption.textContent = "-- Select an Ingredient --";
+            select.appendChild(defaultOption);
+
+            const ingredientSet = new Set();
+
+            recipes.forEach(recipe => {
+                recipe.ingredients.forEach(ingredient => {
+                    if (ingredient.name) {
+                        ingredientSet.add(ingredient.name);
+                    }
+                });
+            });
+
+            const ingredientList = Array.from(ingredientSet).sort();
+
+            ingredientList.forEach(ingredient => {
+                const option = document.createElement("option");
+                option.value = ingredient;
+                option.textContent = ingredient;
+                select.appendChild(option);
+            });
+            container.appendChild(select);
+        }
+
+        displayIngredientDropdown(recipes);
+
+        function getSelectedValues() {
+        return Array.from(dropdownContainer.querySelectorAll("select"))
+            .map(select => select.value)
+            .filter(val => val !== "");
+        }
+        function updateAllDropdowns() {
+            const selectedValues = getSelectedValues();
+
+            dropdownContainer.querySelectorAll("select").forEach(select => {
+                const currentValue = select.value;
+
+                select.innerHTML = `<option value="">-- Select an option --</option>`;
+
+                dietOptions.forEach(option => {
+                if (!selectedValues.includes(option) || option === currentValue) {
+                    const opt = document.createElement("option");
+                    opt.value = option;
+                    opt.textContent = option;
+                    select.appendChild(opt);
+                }
+                });
+
+                if (currentValue) select.value = currentValue;
+            });
+
+            addBtn.disabled = dietDropdownCount >= dietOptions.length || selectedValues.length >= dietOptions.length;
+            }
+
+        function addDietNotes() {
+            const selectedValues = getSelectedValues();
+            const availableOptions = dietOptions.filter(opt => !selectedValues.includes(opt));
+
+            if (dietDropdownCount >= dietOptions.length || availableOptions.length === 0) {
+                addBtn.disabled = true;
+                return;
+            }
+
+            const wrapper = document.createElement("div");
+            wrapper.style.marginBottom = "10px";
+
+            const select = document.createElement("select");
+            select.setAttribute("required", "");
+            select.className ="dietOption";
+            select.innerHTML = `<option value="">-- Select an option --</option>`;
+            availableOptions.forEach(option => {
+                const opt = document.createElement("option");
+                opt.value = option;
+                opt.textContent = option;
+                select.appendChild(opt);
+            });
+
+            select.addEventListener("change", updateAllDropdowns);
+
+            const deleteBtn = document.createElement("button");
+            deleteBtn.textContent = "Delete";
+            deleteBtn.style.marginLeft = "10px";
+            deleteBtn.onclick = () => {
+                dropdownContainer.removeChild(wrapper);
+                dietDropdownCount--;
+                updateAllDropdowns();
+            };
+
+            wrapper.appendChild(select);
+            wrapper.appendChild(deleteBtn);
+            dropdownContainer.appendChild(wrapper);
+
+            dietDropdownCount++;
+            updateAllDropdowns();
+            }
+
+        function populateDropdown(dropdownId, dataArray) {
+            const dropdown = document.getElementById(dropdownId);
+            dropdown.innerHTML = '<option value="">Select</option>';
+            dataArray.forEach(item => {
+                let option = document.createElement("option");
+                option.value = item;
+                option.textContent = item;
+                dropdown.appendChild(option);
+            });
+        }
+        
+        function toggleFilterOptions() {
+            const filterType = document.getElementById("filter-type").value;
+            const allOptions = document.querySelectorAll(".filter-options");
+
+            allOptions.forEach(option => option.style.display = "none");
+
+            if (filterType) {
+                const targetOption = document.getElementById(`${filterType}-options`);
+                if (targetOption) {
+                    targetOption.style.display = "block";
+                }
+            }
+        }
+        
+        function showTab(tabId) {
+            document.querySelectorAll('.content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.getElementById(tabId).classList.add('active');
+                event.target.classList.add('active');
+        }
+        
+        function toggleAdvancedSearch() {
+            const advancedSearch = document.getElementById("advancedSearch");
+            advancedSearch.style.display = advancedSearch.style.display === "none" || advancedSearch.style.display === "" ? "block" : "none";
+        }
+        
+        function addIngredient() {
+            const list = document.getElementById("ingredients-list");
+            const ingredientDiv = document.createElement("div");
+            ingredientDiv.innerHTML = `
+                <input type="text" placeholder="Ingredient Name" class="ingredient-name" required>
+                <input type="number" placeholder="Measurement (e.g., 1 cup)" class="ingredient-measurement" required>
+                <select class="ingredient-size" required>
+                    <option value="">-- Select Measurement --</option>
+                    <option value="tsp">Teaspoon (tsp)</option>
+                    <option value="tbsp">Tablespoon (tbsp)</option>
+                    <option value="cup">Cup</option>
+                    <option value="ml">Milliliter (ml)</option>
+                    <option value="l">Liter (l)</option>
+                    <option value="oz">Ounce (oz)</option>
+                    <option value="g">Gram (g)</option>
+                    <option value="kg">Kilogram (kg)</option>
+                    <option value="lb">Pound (lb)</option>
+                    <option value="pinch">Pinch</option>
+                    <option value="dash">Dash</option>
+                    <option value="N/A">Not Applicable</option>
+                </select>
+                <button type="button" onclick="this.parentElement.remove()">Remove</button>
+            `;
+            list.appendChild(ingredientDiv);
+        }
+
+        function addDirection() {
+            const list = document.getElementById("directions-list");
+            const stepNumber = list.children.length + 1;
+            const directionDiv = document.createElement("div");
+            directionDiv.classList.add("direction-item");
+
+            directionDiv.innerHTML = `
+                <span class="step-number">Step ${stepNumber}:</span>
+                <input type="text" class="direction-step" required>
+                <button type="button" onclick="removeDirection(this)">Remove</button>
+            `;
+
+            list.appendChild(directionDiv);
+        }
+
+        function removeDirection(button) {
+            const directionItem = button.parentElement;
+            directionItem.remove();
+            updateStepNumbers();
+        }
+
+        function updateStepNumbers() {
+            const steps = document.querySelectorAll("#directions-list .direction-item");
+            steps.forEach((step, index) => {
+                step.querySelector(".step-number").textContent = `Step ${index + 1}:`;
+            });
+        }
+        
+        function toggleOptions(selected) {
+            const container = document.getElementById(`dropdown-${selected}`);
+            const dropdowns = container ? container.querySelectorAll("select") : [];
+            const checkboxes = document.getElementById(`checkbox-${selected}`);
+
+            const isChecked = document.querySelector(`input[value='${selected}']`).checked;
+
+            if (dropdowns.length > 0) {
+                dropdowns.forEach(dropdown => {
+                    dropdown.disabled = !isChecked;
+                    dropdown.style.setProperty("pointer-events", isChecked ? "auto" : "none", "important");
+                    dropdown.style.setProperty("opacity", isChecked ? "1" : ".5", "important");
+                });
+            }
+
+            if (checkboxes) {
+                checkboxes.style.setProperty("pointer-events", isChecked ? "auto" : "none", "important");
+                checkboxes.style.setProperty("opacity", isChecked ? "1" : ".5", "important");
+
+                checkboxes.querySelectorAll('input').forEach(cb => {
+                    cb.disabled = !isChecked;
+                });
+                checkboxes.querySelectorAll('select').forEach(cb => {
+                    cb.disabled = !isChecked;
+                    cb.style.setProperty("pointer-events", isChecked ? "auto" : "none", "important");
+                    cb.style.setProperty("opacity", isChecked ? "1" : "100", "important");
+                });
+            }
+        }
+
+        document.getElementById("recipe-form").addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            try {
+                const recipeName = document.getElementById("recipe-name").value;
+                const recipeDifficulty = document.getElementById("recipe-difficulty").value;
+                const recipeTime = document.getElementById("recipe-time").value;
+                const mealType = document.querySelector(".meal-type").value;
+
+                const ingredients = [];
+                document.querySelectorAll("#ingredients-list div").forEach(div => {
+                    const name = div.querySelector(".ingredient-name").value;
+                    const measurement = div.querySelector(".ingredient-measurement").value;
+                    const size = div.querySelector(".ingredient-size").value;
+                    if (name && measurement) {
+                        ingredients.push({ name, measurement, size });
+                    }
+                });
+
+                const directions = [];
+                document.querySelectorAll(".direction-step").forEach(input => {
+                    if (input.value.trim()) {
+                        directions.push(input.value.trim());
+                    }
+                });
+
+                const dietaryRestrictions = [];
+                document.querySelectorAll("#dietaryContainer select").forEach(select => {
+                    if (select.value) {
+                        dietaryRestrictions.push(select.value);
+                    }
+                });
+
+                const imageFile = document.getElementById("recipe-image").files[0];
+
+                const recipeData = {
+                    name: recipeName,
+                    difficulty: recipeDifficulty,
+                    time: recipeTime,
+                    mealType: mealType,
+                    ingredients,
+                    directions,
+                    dietaryRestrictions,
+                    image: imageFile ? URL.createObjectURL(imageFile) : null,
+                    expanded: false
+                };
+
+                console.log(recipeData);
+                recipes.push(recipeData);
+
+                document.getElementById("feedback-message").innerHTML = "Recipe successfully saved!";
+                displayRecipes();
+
+                document.getElementById("recipe-form").reset();
+                document.getElementById("ingredients-list").innerHTML = "";
+                document.getElementById("directions-list").innerHTML = "";
+                document.getElementById("dietaryContainer").innerHTML = "";
+
+            } catch (error) {
+                console.log(error);
+                document.getElementById("feedback-message").innerHTML = "Oh no! We ran into some issues saving your recipe. Please contact us to let us know!";
+            }
+        });
+
+        function renderRecipes(recipeList) {
+            const recipeContainer = document.getElementById("recipe-list");
+            if (!recipeContainer) return;
+            recipeContainer.innerHTML = "";
+
+            recipeList.forEach((recipe, index) => {
+                const recipeDiv = document.createElement("div");
+                recipeDiv.classList.add("recipe");
+
+                const title = `<h3>${recipe.name}</h3>`;
+                const difficulty = `<p><strong>Difficulty:</strong> ${recipe.difficulty}</p>`;
+                const time = `<p><strong>Time:</strong> ${recipe.time} minutes</p>`;
+                const mealType = `<p><strong>Meal Type:</strong> ${recipe.mealType}</p>`;
+                const dietaryRestrictions = `<p><strong>Dietary Restrictions:</strong> ${recipe.dietaryRestrictions?.length ? recipe.dietaryRestrictions.join(", ") : "None"}</p>`;
+                const toggleButton = `<button onclick="toggleFullRecipe(${index})">
+                    ${recipe.expanded ? "Hide Full Details" : "View Full Details"}
+                </button>`;
+
+                let recipeContent = title + difficulty + time + mealType + dietaryRestrictions + toggleButton;
+
+                if (recipe.expanded) {
+                    const ingredientsHtml = recipe.ingredients.length
+                        ? `<ul>${recipe.ingredients.map(ing => `<li>${ing.name} - ${ing.measurement} (${ing.size})</li>`).join("")}</ul>`
+                        : "<p>No ingredients listed.</p>";
+
+                    const directionsHtml = recipe.directions.length
+                        ? `<ol>${recipe.directions.map(dir => `<li>${dir}</li>`).join("")}</ol>`
+                        : "<p>No directions listed.</p>";
+
+                    const imageHtml = recipe.image
+                        ? `<img src="${recipe.image}" alt="Recipe Image" style="max-width:200px;">`
+                        : "";
+
+                    const deleteButton = `<br><button onclick="deleteRecipe(${index})">Delete</button>`;
+
+                    recipeContent += `
+                        <p><strong>Ingredients:</strong></p>
+                        ${ingredientsHtml}
+                        <p><strong>Directions:</strong></p>
+                        ${directionsHtml}
+                        ${imageHtml}
+                        ${deleteButton}
+                    `;
+                }
+
+                recipeDiv.innerHTML = recipeContent;
+                recipeContainer.appendChild(recipeDiv);
+            });
+        }
+
+        function displayRecipes() {
+            renderRecipes(recipes);
+        }
+
+
+
+        function toggleFullRecipe(index) {
+            recipes[index].expanded = !recipes[index].expanded;
+            displayRecipes();
+        }
+
+        function deleteRecipe(index) {
+            recipes.splice(index, 1);
+            displayRecipes();
+        }
+
+        
+        function sortRecipes() {
+            const sortBy = document.getElementById("sort-recipes").value;
+            if (sortBy === "name") {
+                recipes.sort((a, b) => a.name.localeCompare(b.name));
+            } else if (sortBy === "difficulty") {
+                const difficultyOrder = { "Easy": 1, "Medium": 2, "Hard": 3 };
+                recipes.sort((a, b) => difficultyOrder[a.difficulty] - difficultyOrder[b.difficulty]);
+            }
+            displayRecipes();
+        }
+
+        function showTab(tabId) {
+            document.querySelectorAll('.content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+
+            if (tabId === 'addRecipe') {
+                displayRecipes();
+                resetFiltersAndSearch();
+            }
+        }
+
+        function showUploadSection(sectionId) {
+            document.querySelectorAll('.upload-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            document.getElementById(sectionId).style.display = 'block';
+        }
+
+        function displaySearchResults(results) {
+            const recipeList = document.getElementById("recipe-list");
+            recipeList.innerHTML = ""; // Clear previous results
+
+            if (results.length === 0) {
+                recipeList.innerHTML = "<p>No recipes found.</p>";
+                return;
+            }
+
+            results.forEach(recipe => {
+                const recipeDiv = document.createElement("div");
+                recipeDiv.classList.add("recipe-item");
+
+                recipeDiv.innerHTML = `
+                    <h3>${recipe.name}</h3>
+                    <p>Difficulty: ${recipe.difficulty}</p>
+                    <p>Meal Type: ${recipe.mealType}</p>
+                    <button onclick="toggleFullRecipe(this)">View Full Recipe</button>
+                    <div class="full-recipe" style="display: none;">
+                        <p><strong>Ingredients:</strong> ${recipe.ingredients.join(", ")}</p>
+                        <p><strong>Directions:</strong></p>
+                        <ol>${recipe.directions.map(step => `<li>${step}</li>`).join('')}</ol>
+                        <p><strong>Time:</strong> ${recipe.time}</p>
+                    </div>
+                `;
+
+                recipeList.appendChild(recipeDiv);
+            });
+        }
+        function performSearch() {
+                let ErrorNotFound = true;
+                let IngredError = false;
+                let MealError = false;
+                const searchInput = document.getElementById("search-bar").value.trim().toLowerCase();
+                const recipeContainer = document.getElementById("recipe-list");                
+                
+                recipeContainer.innerHTML = "";
+
+
+                let filteredRecipes = recipes;
+                
+                if (searchInput) {
+                    filteredRecipes = filteredRecipes.filter(recipe =>
+                        recipe.name.toLowerCase().includes(searchInput) ||
+                        recipe.ingredients.some(ingredient => ingredient.name.toLowerCase().includes(searchInput)) ||
+                        recipe.mealType.toLowerCase().includes(searchInput) ||
+                        recipe.dietaryRestrictions.some(restriction => restriction.toLowerCase().includes(searchInput))
+                    );
+                }
+
+                const isIngredientChecked = document.querySelector('input[name="main"][value="1"]').checked;
+                const isDietaryChecked = document.querySelector('input[name="main"][value="2"]').checked;
+                const isMealTypeChecked = document.querySelector('input[name="main"][value="3"]').checked;
+
+                if (isIngredientChecked) {
+                    const IngredientValidator = document.getElementById('ingredient-select').value;
+                    if(IngredientValidator == "empty"){
+                        ErrorNotFound = false;
+                        IngredError = true;
+                    }
+                    else{
+                        const includeOrExclude = document.querySelector('#dropdown-1 select').value;
+                        const ingredientChoosen = document.getElementById('ingredient-select').value;
+
+                        filteredRecipes = filteredRecipes.filter(recipe => {
+                            const ingredientNames = recipe.ingredients.map(ingredient => ingredient.name.toLowerCase());
+
+                            const selectedIngredient = ingredientChoosen.toLowerCase();
+
+                            const matchFound = ingredientNames.includes(selectedIngredient);
+
+                            return includeOrExclude === 'Include' ? matchFound : !matchFound;
+                        });
+                    }
+                }
+
+                if (isDietaryChecked) {
+                    const selectedRestrictions = Array.from(document.querySelectorAll('#checkbox-2 input[type="checkbox"]:checked'))
+                        .map(cb => cb.parentElement.textContent.trim().toLowerCase());
+
+                    if (selectedRestrictions.length > 0) {
+                        filteredRecipes = filteredRecipes.filter(recipe =>
+                            selectedRestrictions.every(restriction =>
+                                recipe.dietaryRestrictions.map(r => r.toLowerCase()).includes(restriction)
+                            )
+                        );
+                    }
+                }
+
+                if (isMealTypeChecked) {
+                    const MealTypeValidator = document.getElementById('meal-types').value;
+                    if(MealTypeValidator == "empty"){
+                        ErrorNotFound = false;
+                        MealError = true;
+                    }
+                    else{
+                        const selectedMealType = document.getElementById('meal-types').value.toLowerCase();
+                        filteredRecipes = filteredRecipes.filter(recipe => recipe.mealType.toLowerCase() === selectedMealType);
+                    }
+                }
+                //console.log(ErrorNotFound)
+                //console.log(IngredError)
+                //console.log(MealError)
+
+                if(ErrorNotFound == true){
+                    if(filteredRecipes.length != 0){
+                        renderRecipes(filteredRecipes);
+                        const clearButton = document.createElement("button");
+                        clearButton.textContent = "Clear Search";
+                        clearButton.onclick = () => {
+                            document.getElementById("search-bar").value = "";
+                            displayRecipes();
+                            resetFiltersAndSearch();
+
+                        };
+                        recipeContainer.prepend(clearButton);
+                    }
+                    else{
+                        const recipeContainer = document.getElementById("recipe-list");
+                        recipeContainer.innerHTML = "Uh Oh looks like you don't have any recipes that fit your search... Time to find a new one to Add!";
+                    }
+                    
+                   
+                }
+                else{
+                    if(IngredError && MealError){
+                        alert("Uh Oh you haven't filled in the meal type and ingredients drop downs!");
+                    }
+                    else if(IngredError){
+                        alert("Uh Oh you haven't filled in the ingredients drop down!");
+                    }
+                    else if(MealError){
+                        alert("Uh Oh you haven't filled in the meal type drop downs!");
+                    }
+                    displayRecipes();
+                }
+            
+        }
+    
+        
+        function resetFiltersAndSearch() {
+            document.getElementById("search-bar").value = "";
+
+            const recipes = document.querySelectorAll('.recipe');
+            recipes.forEach(recipe => recipe.style.display = "block");
+
+            const advancedSearch = document.getElementById("advancedSearch");
+            if (advancedSearch) {
+                advancedSearch.style.display = "none";
+            }
+
+            document.querySelectorAll('#advancedSearch input[type="checkbox"]').forEach(checkbox => {
+                checkbox.checked = false;
+                const parentDropdown = checkbox.closest('.dropdown');
+                if (parentDropdown) {
+                    parentDropdown.querySelectorAll('input[type="checkbox"], select').forEach(innerElement => {
+                        innerElement.disabled = true;
+                    });
+                }
+            });
+            const ingredientSelect= document.getElementById('ingredient-select');
+            if (ingredientSelect) {
+                ingredientSelect.selectedIndex = 0;
+            }
+            const mealTypeSelect = document.getElementById('dropdown');
+            if (mealTypeSelect) {
+                mealTypeSelect.selectedIndex = 0;
+            }
+        }
+        
+        window.onload = function() {
+            displayRecipes();
+            //displayRecipeCheckboxes(recipes);
+        };
+    </script>
+</body>
+</html>
